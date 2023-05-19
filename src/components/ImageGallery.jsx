@@ -9,6 +9,7 @@ const ImageGallery = ({ images, onImageClick }) => {
       ))}
     </ul>
   );
+  
 };
 
 export default ImageGallery;

@@ -1,10 +1,10 @@
 import React from 'react';
 
-const Modal = ({ image, onClose }) => {
+const Modal = ({ largeImageURL, onClose }) => {
   return (
     <div className="Overlay" onClick={onClose}>
       <div className="Modal">
-        <img src={image} alt="" />
+        <img src={largeImageURL} alt="" />
       </div>
     </div>
   );

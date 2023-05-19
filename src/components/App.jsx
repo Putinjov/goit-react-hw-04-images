@@ -14,7 +14,7 @@ export class App extends Component {
     page: 1,
     loading: false,
     showModal: false,
-    modalImage: '',
+    largeImageURL: '',
     status: 'idle',
   };
 
@@ -35,6 +35,22 @@ export class App extends Component {
     });
   };
 
+  openModal = () => {
+    this.setState({ showModal: true });
+    document.addEventListener('keydown', this.handleKeyDown);
+  };
+
+  closeModal = () => {
+    this.setState({ showModal: false });
+    document.removeEventListener('keydown', this.handleKeyDown);
+  };
+
+  handleKeyDown = (event) => {
+    if (event.code === 'Escape') {
+      this.closeModal();
+    }
+  };
+
   loadMoreImages = () => {
     this.setState(prevState => ({
       page: prevState.page + 1,
@@ -50,6 +66,7 @@ export class App extends Component {
       const data = await fetchImages(searchQuery, page);
       this.setState(prevState => ({
         images: [...prevState.images, ...data],
+        
         status: 'idle',
       }));
     } catch (error) {
@@ -61,8 +78,8 @@ export class App extends Component {
   };
 
   render() {
-    const { images, loading, showModal, modalImage } = this.state;
-
+    const { images, loading, showModal, largeImageURL
+ } = this.state;
     return (
       <div>
         <Searchbar onSubmit={this.handleSearchSubmit} />
@@ -70,7 +87,7 @@ export class App extends Component {
         {loading && <Loader />}
         {images.length > 0 && !loading && <Button onClick={this.loadMoreImages} />}
         {showModal && (
-          <Modal image={modalImage} onClose={this.closeModal} />
+          <Modal image={largeImageURL} onClose={this.closeModal} />
         )}
       </div>
     );

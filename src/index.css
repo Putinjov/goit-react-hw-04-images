@@ -63,6 +63,8 @@ img {
 /*
  * Стили компонента SearchForm
  */
+
+
 .SearchForm {
   display: flex;
   align-items: center;
