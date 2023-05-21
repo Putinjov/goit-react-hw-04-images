@@ -1,94 +1,99 @@
-import React, { Component } from 'react';
-
-import Searchbar from './Searchbar';
-import ImageGallery from './ImageGallery';
-import Button from './Button';
-import Loader from './Loader';
-import Modal from './Modal';
-import { fetchImages } from '../services/imageApi';
+import Searchbar from './SearchBar/Searchbar';
+import ImageGallery from './ImageGallery/ImageGallery';
+import fetchImagesWithQuery from 'services/imageApi';
+import Modal from './Modal/Modal';
+import Loader from './Loader/Loader';
+import Button from './Button/Button';
+import css from './App.module.css';
+import { Component } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export class App extends Component {
   state = {
-    searchQuery: '',
+    searchData: '',
     images: [],
-    page: 1,
-    loading: false,
+    page: 0,
+    largeImage: '',
     showModal: false,
-    largeImageURL: '',
-    status: 'idle',
+    isLoading: false,
+    error: null,
   };
 
-  componentDidUpdate(_, prevState) {
-    const { searchQuery, page, status } = this.state;
-
-    if (status === 'searching' && (searchQuery !== prevState.searchQuery || page !== prevState.page)) {
-      this.fetchData();
+  componentDidUpdate(prevProps, prevState) {
+    const prevPage = prevState.page;
+    const prevSearchData = prevState.searchData;
+    const { searchData, page, images } = this.state;
+    if (prevPage !== page || prevSearchData !== searchData) {
+      try {
+        this.setState({ isLoading: true });
+        const response = fetchImagesWithQuery(searchData, page);
+        response.then(data => {
+          data.data.hits.length === 0
+            ? toast.error('Nothing found', {
+        position: toast.POSITION.TOP_CENTER
+      })
+            : data.data.hits.forEach(({ id, webformatURL, largeImageURL }) => {
+                !images.some(image => image.id === id) &&
+                  this.setState(({ images }) => ({
+                    images: [...images, { id, webformatURL, largeImageURL }],
+                  }));
+              });
+          this.setState({ isLoading: false });
+        });
+      } catch (error) {
+        this.setState({ error, isLoading: false });
+      } finally {
+      }
     }
   }
 
-  handleSearchSubmit = query => {
+  onSubmit = searchData => {
+    if (searchData.trim() === '') {
+      return toast.error('Enter the meaning for search', {
+        position: toast.POSITION.TOP_CENTER
+      });
+    } else if (searchData === this.state.searchData) {
+      return;
+    }
     this.setState({
-      searchQuery: query,
+      searchData: searchData,
       page: 1,
       images: [],
-      status: 'searching',
     });
   };
 
-  openModal = () => {
-    this.setState({ showModal: true });
-    document.addEventListener('keydown', this.handleKeyDown);
+  nextPage = () => {
+    this.setState(({ page }) => ({ page: page + 1 }));
   };
 
-  closeModal = () => {
-    this.setState({ showModal: false });
-    document.removeEventListener('keydown', this.handleKeyDown);
-  };
-
-  handleKeyDown = (event) => {
-    if (event.code === 'Escape') {
-      this.closeModal();
-    }
-  };
-
-  loadMoreImages = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-      status: 'searching',
+  openModal = index => {
+    this.setState(({ images }) => ({
+      showModal: true,
+      largeImage: images[index].largeImageURL,
     }));
   };
 
-  fetchData = async () => {
-    const { searchQuery, page } = this.state;
-
-    try {
-      this.setState({ loading: true });
-      const data = await fetchImages(searchQuery, page);
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data],
-        
-        status: 'idle',
-      }));
-    } catch (error) {
-      console.error('Error fetching images:', error);
-      this.setState({ status: 'idle' });
-    } finally {
-      this.setState({ loading: false });
-    }
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
   render() {
-    const { images, loading, showModal, largeImageURL
- } = this.state;
+    const { toggleModal, openModal, nextPage, onSubmit } = this;
+    const { images, isLoading, largeImage, showModal } = this.state;
+
     return (
-      <div>
-        <Searchbar onSubmit={this.handleSearchSubmit} />
-        <ImageGallery images={images} onImageClick={this.openModal} />
-        {loading && <Loader />}
-        {images.length > 0 && !loading && <Button onClick={this.loadMoreImages} />}
-        {showModal && (
-          <Modal image={largeImageURL} onClose={this.closeModal} />
+      <div className={css.App}>
+        <Searchbar onSubmit={onSubmit} />
+        {images.length !== 0 && (
+          <ImageGallery images={images} openModal={openModal} />
         )}
+        {showModal && (
+          <Modal toggleModal={toggleModal} largeImage={largeImage} />
+        )}
+        {isLoading && <Loader />}
+        <ToastContainer autoClose={2500} />
+        {images.length >= 12 && <Button nextPage={nextPage} />}
       </div>
     );
   }
