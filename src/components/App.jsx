@@ -1,6 +1,6 @@
 import Searchbar from './SearchBar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
-import fetchImagesWithQuery from 'services/imageApi';
+import fetchImages from 'services/imageApi';
 import Modal from './Modal/Modal';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
@@ -27,7 +27,7 @@ export class App extends Component {
     if (prevPage !== page || prevSearchData !== searchData) {
       try {
         this.setState({ isLoading: true });
-        const response = fetchImagesWithQuery(searchData, page);
+        const response = fetchImages(searchData, page);
         response.then(data => {
           data.data.hits.length === 0
             ? toast.error('Nothing found', {
