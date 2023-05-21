@@ -4,7 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Searchbar from './SearchBar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
-import fetchImagesWithQuery from 'services/imageApi';
+import fetchImages from 'services/imageApi';
 import Modal from './Modal/Modal';
 import Loader from './Loader/Loader';
 import Button from './Button/Button';
@@ -36,7 +36,7 @@ export class App extends Component {
 
     try {
       this.setState({ isLoading: true });
-      const response = await fetchImagesWithQuery(searchData, page);
+      const response = await fetchImages(searchData, page);
       const data = response.data;
 
       if (data.hits.length === 0) {
