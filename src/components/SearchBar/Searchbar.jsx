@@ -1,46 +1,49 @@
-import { Component } from 'react';
-import css from './Searchbar.module.css';
+import React from 'react';
+import { Formik, Form, Field } from 'formik';
 import PropTypes from 'prop-types';
+import css from './Searchbar.module.css';
 
-export default class Searchbar extends Component {
-  state = {
+const Searchbar = ({ onSubmit }) => {
+  const initialValues = {
     searchData: '',
   };
 
-  static propTypes = {
-    onSubmit: PropTypes.func.isRequired,
+  const handleSubmit = (values, { resetForm }) => {
+    onSubmit(values.searchData);
+    resetForm();
   };
 
-  handleSubmit = e => {
-    e.preventDefault();
-    this.props.onSubmit(this.state.searchData);
+  const validateForm = values => {
+    const errors = {};
+    if (!values.searchData) {
+      errors.searchData = 'Please enter a search term';
+    }
+    return errors;
   };
 
-  handleChange = evt => {
-    const { value } = evt.target;
-    this.setState({ searchData: value });
-  };
-
-  render() {
-    const { handleChange, handleSubmit } = this;
-
-    return (
-      <header className={css.Searchbar}>
-        <form className={css.SearchForm} onSubmit={handleSubmit}>
+  return (
+    <header className={css.Searchbar}>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit} validate={validateForm}>
+        <Form className={css.SearchForm}>
           <button type="submit" className={css.SearchForm__button}>
             <span className={css.SearchForm__button__label}>Search</span>
           </button>
 
-          <input
+          <Field
             className={css.SearchForm__input}
             type="text"
             autoComplete="off"
-            autoFocus
+            name="searchData"
             placeholder="Search images and photos"
-            onChange={handleChange}
           />
-        </form>
-      </header>
-    );
-  }
-}
+        </Form>
+      </Formik>
+    </header>
+  );
+};
+
+Searchbar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
+
+export default Searchbar;
