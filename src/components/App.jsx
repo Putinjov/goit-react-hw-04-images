@@ -13,7 +13,7 @@ import css from './App.module.css';
 export const App = () => {
   const [searchData, setSearchData] = useState('');
   const [images, setImages] = useState([]);
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [largeImage, setLargeImage] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +22,7 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    if (page !== 0 || searchData !== '') {
+    if (searchData !== '') {
       fetchImagesData();
     }
   }, [page, searchData]);
